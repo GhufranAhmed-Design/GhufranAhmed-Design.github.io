@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghufran Ahmed — Mechanical Design Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue-deep: #071c2c;
+    --blue-panel: #0a2740;
+    --blue-mid: #2e6e95;
+    --blue-glow: #4fc3f7;
+    --paper: #eaf4fb;
+    --paper-dim: #9fbdd1;
+    --accent: #ff6a1f;
+    --accent-glow: #ff8a3d;
+    --accent-dim: #b8480e;
+    --grid-line: rgba(234,244,251,0.05);
+    --grid-line-strong: rgba(234,244,251,0.11);
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+
+    /* discipline accent palette */
+    --c-cyan: #22d3ee;
+    --c-orange: #ff6a1f;
+    --c-green: #34d399;
+    --c-purple: #a78bfa;
+    --c-pink: #f472b6;
+    --c-yellow: #facc15;
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+  html{ scroll-behavior: smooth; }
+
+  body{
+    background: var(--blue-deep);
+    color: var(--paper);
+    font-family: var(--font-body);
+    line-height: 1.5;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* animated blueprint grid backdrop */
+  .grid-bg{
+    position: fixed; inset:0; z-index:-2;
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(var(--grid-line-strong) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line-strong) 1px, transparent 1px);
+    background-size: 18px 18px, 18px 18px, 90px 90px, 90px 90px;
+    animation: driftGrid 40s linear infinite;
+  }
+  @keyframes driftGrid{
+    0%{ background-position: 0 0, 0 0, 0 0, 0 0; }
+    100%{ background-position: 90px 90px, 90px 90px, 90px 90px, 90px 90px; }
+  }
+  .glow-spot{
+    position: fixed; z-index:-1; border-radius:50%;
+    filter: blur(90px); opacity: 0.28; pointer-events:none;
+  }
+  .glow-1{ width:520px; height:520px; background: var(--c-cyan); top:-160px; left:-120px; }
+  .glow-2{ width:460px; height:460px; background: var(--c-pink); bottom:10%; right:-140px; opacity:0.16; }
+  .glow-3{ width:400px; height:400px; background: var(--c-green); top:40%; left:60%; opacity:0.12; }
+
+  /* mechanical background — rotating gears + schematic linework */
+  .mech-bg{ position: fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden; }
+  .mech-bg svg{ position:absolute; opacity:0.07; }
+  .gear-a{ width:640px; height:640px; top:-180px; right:-220px; animation: spinCW 90s linear infinite; }
+  .gear-b{ width:420px; height:420px; bottom:-140px; left:-140px; animation: spinCCW 70s linear infinite; }
+  .gear-c{ width:260px; height:260px; top:38%; left:6%; animation: spinCW 50s linear infinite; opacity:0.05; }
+  .schematic{ width:900px; height:900px; top:15%; left:50%; transform: translateX(-50%); opacity:0.035; }
+  @keyframes spinCW{ to{ transform: rotate(360deg); } }
+  @keyframes spinCCW{ to{ transform: rotate(-360deg); } }
+  @media (max-width: 780px){ .mech-bg svg{ opacity:0.045; } }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  }
+
+  a{ color: inherit; }
+
+  /* cursor coordinate readout */
+  #coord-readout{
+    position: fixed; z-index: 200; pointer-events: none;
+    font-family: var(--font-mono); font-size: 10px; color: var(--blue-glow);
+    background: rgba(7,28,44,0.85); border: 1px solid var(--grid-line-strong);
+    padding: 3px 7px; transform: translate(14px, 14px);
+    white-space: nowrap; opacity: 0; transition: opacity .2s;
+  }
+  @media (max-width: 900px){ #coord-readout{ display:none; } }
+
+  .sheet-frame{
+    max-width: 1180px; margin: 0 auto;
+    border-left: 1px solid var(--grid-line-strong);
+    border-right: 1px solid var(--grid-line-strong);
+    position: relative; padding: 0 28px;
+  }
+
+  .corner-marks{ position: relative; }
+  .corner-marks::before, .corner-marks::after{
+    content:""; position:absolute; width:16px; height:16px;
+    border-top: 2px solid var(--accent); border-left: 2px solid var(--accent);
+    top:-1px; left:-1px;
+  }
+  .corner-marks::after{
+    top:auto; left:auto; bottom:-1px; right:-1px;
+    border-top:none; border-left:none;
+    border-bottom:2px solid var(--accent); border-right:2px solid var(--accent);
+  }
+
+  /* ===== NAV ===== */
+  header.nav{
+    position: sticky; top:0; z-index:50;
+    background: rgba(7,28,44,0.82);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--grid-line-strong);
+  }
+  .nav-inner{
+    max-width: 1180px; margin:0 auto; padding: 16px 28px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .nav-mark{ font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.08em; color: var(--paper-dim); }
+  .nav-mark b{ color: var(--paper); font-weight:600; }
+  .nav-mark .dot{ display:inline-block; width:6px; height:6px; border-radius:50%; background: var(--accent); margin-right:8px; box-shadow: 0 0 8px var(--accent); animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:0.35; } }
+  nav.links{ display:flex; gap: 28px; font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.04em; }
+  nav.links a{ text-decoration:none; color: var(--paper-dim); position:relative; padding-bottom:3px; transition: color .2s; }
+  nav.links a:hover, nav.links a:focus-visible{ color: var(--paper); }
+  nav.links a:hover::after, nav.links a:focus-visible::after{ content:""; position:absolute; left:0; right:0; bottom:-3px; height:1px; background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  @media (max-width: 640px){ nav.links{ display:none; } }
+
+  /* ===== TICKER ===== */
+  .ticker{
+    border-bottom: 1px solid var(--grid-line-strong);
+    overflow: hidden; white-space: nowrap; background: rgba(234,244,251,0.02);
+  }
+  .ticker-track{
+    display:inline-flex; animation: scrollTicker 28s linear infinite;
+    font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.12em; color: var(--paper-dim);
+  }
+  .ticker-track span{ padding: 9px 26px; text-transform: uppercase; }
+  .ticker-track span::after{ content:"//"; margin-left:26px; color: var(--accent); }
+  @keyframes scrollTicker{ 0%{ transform: translateX(0); } 100%{ transform: translateX(-50%); } }
+
+  /* ===== HERO ===== */
+  .hero{ padding: 76px 0 40px; display:grid; grid-template-columns: 1.15fr 0.85fr; gap: 40px; align-items:center; }
+  @media (max-width: 900px){ .hero{ grid-template-columns: 1fr; padding-top: 52px; } }
+
+  .hero-eyebrow{
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.18em;
+    color: var(--accent); text-transform: uppercase; margin-bottom: 20px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .hero-eyebrow::before{ content:""; width:26px; height:1px; background: var(--accent); }
+
+  h1.hero-name{
+    font-family: var(--font-display); font-weight: 800;
+    font-size: clamp(2.8rem, 6.4vw, 5.2rem); line-height: 0.96;
+    letter-spacing: -0.015em;
+    background: linear-gradient(100deg, var(--c-cyan) 0%, var(--paper) 35%, var(--paper) 65%, var(--c-pink) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero-role{
+    font-family: var(--font-mono); font-size: clamp(14px, 2vw, 17px);
+    color: var(--blue-glow); margin-top: 16px; letter-spacing: 0.03em;
+  }
+  .hero-role span{ color: var(--paper-dim); }
+  .hero-intro{ max-width: 560px; margin-top: 24px; font-size: 16px; color: var(--paper-dim); }
+
+  .hero-cta{ display:flex; gap:14px; margin-top: 32px; flex-wrap: wrap; }
+  .btn{
+    font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0.06em;
+    padding: 12px 22px; text-decoration:none; text-transform: uppercase;
+    border: 1px solid var(--grid-line-strong); transition: all .25s;
+    display:inline-flex; align-items:center; gap:8px;
+  }
+  .btn-primary{ background: var(--accent); color: #071c2c; border-color: var(--accent); font-weight:600; }
+  .btn-primary:hover{ box-shadow: 0 0 22px rgba(255,106,31,0.5); transform: translateY(-2px); }
+  .btn-ghost{ color: var(--paper-dim); }
+  .btn-ghost:hover{ color: var(--paper); border-color: var(--blue-mid); }
+
+  /* hero assembly illustration */
+  .hero-art{
+    position: relative; aspect-ratio: 1/1; max-width: 420px; margin: 0 auto;
+  }
+  .hero-art svg{ width:100%; height:100%; }
+  .draw-line{
+    fill:none; stroke: var(--blue-glow); stroke-width: 1.4;
+    stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 600; stroke-dashoffset: 600;
+    animation: drawOn 2.6s ease forwards;
+  }
+  .draw-line.accent{ stroke: var(--accent); }
+  .draw-line.delay1{ animation-delay: .3s; }
+  .draw-line.delay2{ animation-delay: .6s; }
+  .draw-line.delay3{ animation-delay: .9s; }
+  @keyframes drawOn{ to{ stroke-dashoffset: 0; } }
+  .art-dot{ fill: var(--accent); animation: fadeInDot 0.4s ease forwards; opacity:0; animation-delay: 2.4s; }
+  @keyframes fadeInDot{ to{ opacity:1; } }
+  .art-spin{ transform-origin: 200px 200px; animation: spinSlow 16s linear infinite; }
+  @keyframes spinSlow{ to{ transform: rotate(360deg); } }
+
+  /* title block */
+  .title-block{
+    margin-top: 48px; border: 1px solid var(--grid-line-strong);
+    display: grid; grid-template-columns: repeat(4, 1fr);
+  }
+  .title-block .cell{ padding: 14px 18px; border-right: 1px solid var(--grid-line-strong); border-top: 1px solid var(--grid-line-strong); }
+  .title-block .cell:last-child{ border-right:none; }
+  .title-block .cell .label{ font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; color: var(--paper-dim); text-transform: uppercase; margin-bottom: 6px; }
+  .title-block .cell .value{ font-family: var(--font-mono); font-size: 13px; color: var(--paper); }
+  @media (max-width: 640px){ .title-block{ grid-template-columns: repeat(2, 1fr); } }
+
+  /* ===== reveal on scroll ===== */
+  .reveal{ opacity: 0; transform: translateY(28px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal.in{ opacity: 1; transform: translateY(0); }
+
+  /* ===== SECTIONS ===== */
+  .section{ padding: 84px 0; border-top: 1px solid var(--grid-line-strong); }
+  .section-head{ display:flex; align-items: baseline; gap: 14px; margin-bottom: 46px; flex-wrap: wrap; }
+  .section-num{ font-family: var(--font-mono); font-size: 13px; color: var(--accent); }
+  h2.section-title{ font-family: var(--font-display); font-weight: 700; font-size: clamp(1.7rem, 3.4vw, 2.3rem); color: var(--paper); }
+  .section-sub{ font-family: var(--font-mono); font-size: 12px; color: var(--paper-dim); margin-left: auto; letter-spacing: 0.04em; }
+  @media (max-width: 640px){ .section-sub{ margin-left:0; } }
+
+  /* ===== PROJECT SHEETS ===== */
+  .sheets{ display:grid; grid-template-columns: repeat(2, 1fr); gap: 28px; }
+  @media (max-width: 780px){ .sheets{ grid-template-columns: 1fr; } }
+
+  .sheet{
+    border: 1px solid var(--grid-line-strong); background: rgba(234,244,251,0.02);
+    transition: border-color .3s, box-shadow .3s; position: relative;
+    transform-style: preserve-3d; will-change: transform;
+    border-top: 3px solid var(--c, var(--blue-glow));
+  }
+  .sheet:hover{ border-color: var(--c, var(--blue-glow)); border-top-color: var(--c, var(--blue-glow)); box-shadow: 0 18px 40px rgba(0,0,0,0.35), 0 0 30px color-mix(in srgb, var(--c, var(--blue-glow)) 35%, transparent); }
+
+  .sheet-top{
+    display:flex; justify-content: space-between; align-items:center;
+    padding: 10px 16px; border-bottom: 1px solid var(--grid-line-strong);
+    font-family: var(--font-mono); font-size: 11px; color: var(--paper-dim); letter-spacing: 0.06em;
+  }
+  .sheet-top .sheet-no{ color: var(--c, var(--accent)); }
+
+  .viewport{
+    height: 190px; position: relative; overflow: hidden;
+    background: repeating-linear-gradient(45deg, rgba(234,244,251,0.035) 0 1px, transparent 1px 9px);
+    display:flex; align-items:center; justify-content:center;
+    transition: transform .4s ease;
+  }
+  .viewport::before{ content:""; position:absolute; inset: 14px; border: 1px dashed var(--grid-line-strong); z-index:2; pointer-events:none; }
+  .sheet:hover .viewport svg{ transform: scale(1.12) rotate(-3deg); }
+  .viewport svg{ width: 64px; height: 64px; opacity: 0.7; transition: transform .4s ease, opacity .3s; stroke: var(--c, var(--blue-glow)); }
+  .sheet:hover .viewport svg{ opacity: 1; }
+  .viewport img{
+    width:100%; height:100%; object-fit: cover; display:block;
+    filter: saturate(0.85) contrast(1.08) brightness(0.96);
+    transition: transform .5s ease, filter .3s ease;
+  }
+  .sheet:hover .viewport img{ transform: scale(1.08); filter: saturate(1) contrast(1.1) brightness(1); }
+
+  .sheet-body{ padding: 20px 20px 22px; }
+  .sheet-body h3{ font-family: var(--font-display); font-weight: 600; font-size: 1.2rem; color: var(--paper); margin-bottom: 10px; }
+  .sheet-body p{ font-size: 14.5px; color: var(--paper-dim); }
+
+  .tags{ display:flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .tag{ font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.04em; padding: 4px 9px; border: 1px solid var(--blue-mid); color: var(--paper-dim); transition: all .25s; }
+  .sheet:hover .tag{ border-color: var(--c, var(--accent)); color: var(--paper); }
+
+  /* ===== SKILLS — BOM TABLE ===== */
+  .bom{ width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 13px; }
+  .bom thead th{ text-align:left; padding: 10px 14px; border-bottom: 1px solid var(--blue-mid); color: var(--accent); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .bom tbody td{ padding: 13px 14px; border-bottom: 1px solid var(--grid-line-strong); color: var(--paper-dim); vertical-align: middle; }
+  .bom tbody tr{ transition: background .2s; }
+  .bom tbody tr:hover td{ color: var(--paper); background: rgba(79,195,247,0.04); }
+  .bom .item-no{ color: var(--paper-dim); width: 48px; }
+  .bom .item-name{ color: var(--paper); font-weight: 500; }
+
+  .meter{ height: 6px; background: rgba(234,244,251,0.08); position: relative; width: 100%; min-width: 100px; overflow:hidden; }
+  .meter span{ position:absolute; top:0; left:0; bottom:0; width:0; background: linear-gradient(90deg, var(--blue-mid), var(--c, var(--blue-glow))); transition: width 1.1s cubic-bezier(.2,.8,.2,1); box-shadow: 0 0 8px color-mix(in srgb, var(--c, var(--blue-glow)) 60%, transparent); }
+  .meter.filled span{ width: var(--fill); }
+
+  @media (max-width: 640px){ .bom .col-hide{ display:none; } }
+
+  /* ===== ABOUT ===== */
+  .about-grid{ display:grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px; }
+  @media (max-width: 780px){ .about-grid{ grid-template-columns: 1fr; } }
+  .about-grid p{ color: var(--paper-dim); font-size: 15.5px; margin-bottom: 16px; }
+  .status-panel{ border: 1px solid var(--grid-line-strong); padding: 24px; font-family: var(--font-mono); font-size: 12.5px; }
+  .status-panel .row{ display:flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--grid-line); color: var(--paper-dim); }
+  .status-panel .row:last-child{ border-bottom:none; }
+  .status-panel .row b{ color: var(--paper); font-weight: 500; }
+
+  /* ===== CONTACT ===== */
+  .contact-block{ border: 1px solid var(--grid-line-strong); padding: 46px 32px; text-align:center; position: relative; overflow:hidden; }
+  .contact-block::before{
+    content:""; position:absolute; inset:0; opacity:.5;
+    background: radial-gradient(circle at 50% 0%, rgba(79,195,247,0.14), transparent 60%);
+    pointer-events:none;
+  }
+  .contact-block h2{ font-family: var(--font-display); font-weight:700; font-size: clamp(1.7rem,4vw,2.5rem); margin-bottom: 14px; position:relative; }
+  .contact-block p{ color: var(--paper-dim); margin-bottom: 28px; position:relative; }
+  .contact-fields{ display:flex; gap: 14px; justify-content:center; flex-wrap: wrap; font-family: var(--font-mono); font-size: 12.5px; position:relative; }
+  .contact-fields .field{ border: 1px dashed var(--grid-line-strong); padding: 10px 18px; color: var(--paper-dim); transition: border-color .25s; }
+  .contact-fields .field:hover{ border-color: var(--accent); }
+  .contact-fields .field b{ color: var(--accent); }
+
+  footer{ padding: 30px 0 50px; text-align:center; font-family: var(--font-mono); font-size: 11px; color: var(--paper-dim); letter-spacing: 0.06em; }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div class="glow-spot glow-1"></div>
+<div class="glow-spot glow-2"></div>
+<div class="glow-spot glow-3"></div>
+
+<div class="mech-bg">
+  <!-- large gear, top right -->
+  <svg class="gear-a" viewBox="0 0 200 200" fill="none" stroke="#4fc3f7" stroke-width="1.4">
+    <g id="gearTeethA">
+      <circle cx="100" cy="100" r="70"/>
+      <circle cx="100" cy="100" r="46"/>
+      <circle cx="100" cy="100" r="8" fill="#4fc3f7"/>
+      <!-- teeth -->
+      <g stroke-width="2">
+        <path d="M100 30 L100 12 M100 170 L100 188 M30 100 L12 100 M170 100 L188 100"/>
+        <path d="M149.5 50.5 L162 38 M50.5 149.5 L38 162 M149.5 149.5 L162 162 M50.5 50.5 L38 38"/>
+        <path d="M126 22 L134 6 M74 178 L66 194 M178 126 L194 134 M22 74 L6 66 M178 74 L194 66 M22 126 L6 134 M126 178 L134 194 M74 22 L66 6"/>
+      </g>
+      <!-- spokes -->
+      <path d="M100 54 L100 146 M54 100 L146 100 M67 67 L133 133 M133 67 L67 133" stroke-width="1"/>
+    </g>
+  </svg>
+
+  <!-- medium gear, bottom left, meshing partner -->
+  <svg class="gear-b" viewBox="0 0 200 200" fill="none" stroke="#4fc3f7" stroke-width="1.4">
+    <circle cx="100" cy="100" r="72"/>
+    <circle cx="100" cy="100" r="50"/>
+    <circle cx="100" cy="100" r="10" fill="#4fc3f7"/>
+    <g stroke-width="2">
+      <path d="M100 28 L100 8 M100 172 L100 192 M28 100 L8 100 M172 100 L192 100"/>
+      <path d="M151 49 L165 35 M49 151 L35 165 M151 151 L165 165 M49 49 L35 35"/>
+    </g>
+    <path d="M100 50 L100 150 M50 100 L150 100" stroke-width="1"/>
+  </svg>
+
+  <!-- small gear accent, orange -->
+  <svg class="gear-c" viewBox="0 0 200 200" fill="none" stroke="#f472b6" stroke-width="1.6">
+    <circle cx="100" cy="100" r="68"/>
+    <circle cx="100" cy="100" r="42"/>
+    <g stroke-width="2.4">
+      <path d="M100 32 L100 10 M100 168 L100 190 M32 100 L10 100 M168 100 L190 100"/>
+      <path d="M148 52 L160 40 M52 148 L40 160 M148 148 L160 160 M52 52 L40 40"/>
+    </g>
+  </svg>
+
+  <!-- schematic exploded-view linework, center -->
+  <svg class="schematic" viewBox="0 0 400 400" fill="none" stroke="#eaf4fb" stroke-width="1">
+    <rect x="60" y="40" width="90" height="60"/>
+    <rect x="250" y="60" width="70" height="70"/>
+    <circle cx="200" cy="220" r="55"/>
+    <circle cx="200" cy="220" r="30"/>
+    <path d="M105 100 L105 160 L200 165 M285 130 L285 180 L200 190 M200 275 L200 340 L120 340 M200 275 L280 340" stroke-dasharray="4 4"/>
+    <path d="M120 340 L280 340" stroke-dasharray="4 4"/>
+    <rect x="80" y="320" width="80" height="40"/>
+    <rect x="240" y="320" width="80" height="40"/>
+  </svg>
+</div>
+
+<div id="coord-readout">X 0000 · Y 0000</div>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="nav-mark"><span class="dot"></span>SHEET&nbsp; <b>GA-001</b> &nbsp;/ MECH. DESIGN PORTFOLIO</div>
+    <nav class="links">
+      <a href="#about">About</a>
+      <a href="#projects">Projects</a>
+      <a href="#skills">Skills</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<div class="ticker">
+  <div class="ticker-track" id="ticker-track">
+    <span>SolidWorks</span><span>Assemblies</span><span>Sheet Metal</span><span>Weldments</span><span>Surfacing</span><span>FEA Simulation</span><span>CFD Flow Sim.</span><span>GD&amp;T</span>
+  </div>
+</div>
+
+<div class="sheet-frame">
+
+  <section class="hero" id="top">
+    <div>
+      <div class="hero-eyebrow">Mechanical Engineering — Design Portfolio</div>
+      <h1 class="hero-name">Ghufran<br>Ahmed</h1>
+      <div class="hero-role">Mechanical Engineering Student <span>— 3rd Year, B.Sc.</span></div>
+      <p class="hero-intro">
+        I design and validate mechanical systems in SolidWorks — from parametric assemblies
+        and sheet-metal structures to FEA and CFD-backed simulations. Self-taught since the
+        start of my degree, project by project.
+      </p>
+      <div class="hero-cta">
+        <a href="#projects" class="btn btn-primary">View Projects →</a>
+        <a href="#contact" class="btn btn-ghost">Get In Touch</a>
+      </div>
+
+      <div class="title-block corner-marks">
+        <div class="cell"><div class="label">Drawn by</div><div class="value">G. Ahmed</div></div>
+        <div class="cell"><div class="label">Primary tool</div><div class="value">SolidWorks</div></div>
+        <div class="cell"><div class="label">Status</div><div class="value">3rd Year — In Progress</div></div>
+        <div class="cell"><div class="label">Focus</div><div class="value">Assemblies / FEA / CFD</div></div>
+      </div>
+    </div>
+
+    <div class="hero-art">
+      <svg viewBox="0 0 400 400" fill="none">
+        <g class="art-spin">
+          <circle cx="200" cy="200" r="150" class="draw-line" stroke-dasharray="943" style="stroke-dashoffset:943; animation: drawOn 3s ease forwards;"/>
+        </g>
+        <circle cx="200" cy="200" r="6" class="art-dot"/>
+        <path class="draw-line delay1" d="M200 50 L200 90 M200 310 L200 350 M50 200 L90 200 M310 200 L350 200"/>
+        <path class="draw-line delay2 accent" d="M120 120 L160 160 M280 120 L240 160 M120 280 L160 240 M280 280 L240 240"/>
+        <rect x="150" y="150" width="100" height="100" class="draw-line delay3" transform="rotate(45 200 200)"/>
+        <circle cx="200" cy="200" r="40" class="draw-line delay3"/>
+        <path class="draw-line delay2" d="M200 160 L200 140 M200 240 L200 260 M160 200 L140 200 M240 200 L260 200"/>
+      </svg>
+    </div>
+  </section>
+
+  <section class="section reveal" id="about">
+    <div class="section-head">
+      <span class="section-num">01</span>
+      <h2 class="section-title">About</h2>
+    </div>
+    <div class="about-grid">
+      <div>
+        <p>
+          I'm a mechanical engineering student in my third year, with a focus on
+          SolidWorks that started from day one of my degree and has grown into hands-on
+          project work — mechanisms, structures, and simulation-backed design.
+        </p>
+        <p>
+          I like taking a project past the modeling stage — checking it under load with
+          FEA, or validating flow behaviour with CFD — rather than stopping at a finished
+          render. It's how I've learned the tool: by building things that needed to
+          actually hold up.
+        </p>
+      </div>
+      <div class="status-panel corner-marks">
+        <div class="row"><span>Software</span><b>SolidWorks</b></div>
+        <div class="row"><span>Simulation</span><b>FEA · CFD (Flow Sim.)</b></div>
+        <div class="row"><span>Modeling</span><b>Assemblies · Sheet Metal · Weldments</b></div>
+        <div class="row"><span>Education</span><b>B.Sc. Mechanical Eng. (3rd Yr)</b></div>
+        <div class="row"><span>Learning since</span><b>Start of degree</b></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="projects">
+    <div class="section-head reveal">
+      <span class="section-num">02</span>
+      <h2 class="section-title">Projects</h2>
+      <span class="section-sub">7 SHEETS TOTAL</span>
+    </div>
+
+    <div class="sheets">
+
+      <div class="sheet reveal" style="--c: var(--c-cyan)">
+        <div class="sheet-top"><span class="sheet-no">GA-101</span><span>ASSEMBLY / MOTION</span></div>
+        <div class="viewport">
+          <img src="robo1_crop.jpg" alt="Robotic arm assembly modeled in SolidWorks">
+        </div>
+        <div class="sheet-body">
+          <h3>Robotic Arm</h3>
+          <p>Multi-link robotic arm modeled as a full assembly — mated joints, range-of-motion checks, and a motion study to validate reach and clearance before anything was built.</p>
+          <div class="tags"><span class="tag">Assembly</span><span class="tag">Mates</span><span class="tag">Motion Study</span></div>
+        </div>
+      </div>
+
+      <div class="sheet reveal" style="--c: var(--c-orange)">
+        <div class="sheet-top"><span class="sheet-no">GA-102</span><span>STRUCTURE / FEA</span></div>
+        <div class="viewport">
+          <img src="fea_table_crop.jpg" alt="FEA von Mises stress analysis on welded table frame">
+        </div>
+        <div class="sheet-body">
+          <h3>Welded Table Frame</h3>
+          <p>Metal frame table with a wood-plate top. Built the frame with SolidWorks' Weldments tool, then ran a static FEA study to check stress and deflection under load.</p>
+          <div class="tags"><span class="tag">Weldments</span><span class="tag">Static FEA</span><span class="tag">Structural</span></div>
+        </div>
+      </div>
+
+      <div class="sheet reveal" style="--c: var(--c-green)">
+        <div class="sheet-top"><span class="sheet-no">GA-103</span><span>SURFACING / CFD</span></div>
+        <div class="viewport">
+          <img src="propeller_duct_crop.jpg" alt="CFD flow trajectory simulation on ducted propeller">
+        </div>
+        <div class="sheet-body">
+          <h3>Ducted Propeller</h3>
+          <p>Propeller-and-duct assembly built with surfacing tools, then run through CFD flow simulation to study airflow behaviour and duct efficiency.</p>
+          <div class="tags"><span class="tag">Surfacing</span><span class="tag">CFD</span><span class="tag">Flow Sim.</span></div>
+        </div>
+      </div>
+
+      <div class="sheet reveal" style="--c: var(--c-purple)">
+        <div class="sheet-top"><span class="sheet-no">GA-104</span><span>SHEET METAL</span></div>
+        <div class="viewport">
+          <img src="solar_stand_crop.jpg" alt="Solar panel stand structure modeled in SolidWorks">
+        </div>
+        <div class="sheet-body">
+          <h3>Solar Panel Stand</h3>
+          <p>Angled support stand for a solar panel — sized and modeled to hold a fixed tilt angle, with mounting points designed for basic structural stability.</p>
+          <div class="tags"><span class="tag">Sheet Metal</span><span class="tag">Structural</span></div>
+        </div>
+      </div>
+
+      <div class="sheet reveal" style="--c: var(--c-pink)">
+        <div class="sheet-top"><span class="sheet-no">GA-105</span><span>ROTATING / TURBINE</span></div>
+        <div class="viewport">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.2"><circle cx="12" cy="12" r="2"/><path d="M12 12 L12 4 M12 12 L18.9 8 M12 12 L18.9 16 M12 12 L12 20 M12 12 L5.1 16 M12 12 L5.1 8" stroke-linecap="round"/></svg>
+        </div>
+        <div class="sheet-body">
+          <h3>Pelton Wheel Turbine</h3>
+          <p>Small-scale Pelton wheel model — bucket geometry and hub design modeled to explore how the blade profile relates to a water-jet-driven turbine.</p>
+          <div class="tags"><span class="tag">Part Design</span><span class="tag">Rotational</span></div>
+        </div>
+      </div>
+
+      <div class="sheet reveal" style="--c: var(--c-yellow)">
+        <div class="sheet-top"><span class="sheet-no">GA-106</span><span>WELDMENTS</span></div>
+        <div class="viewport">
+          <img src="stairs_crop.jpg" alt="Stairs structure built with SolidWorks Weldments tool">
+        </div>
+        <div class="sheet-body">
+          <h3>Stairs Structure</h3>
+          <p>Modular staircase structure modeled with the Weldments tool — structural members, consistent rise/run geometry, and a cut-list-ready frame.</p>
+          <div class="tags"><span class="tag">Weldments</span><span class="tag">Structural</span></div>
+        </div>
+      </div>
+
+      <div class="sheet reveal" style="--c: var(--c-cyan)">
+        <div class="sheet-top"><span class="sheet-no">GA-107</span><span>REVOLVE / LOFT</span></div>
+        <div class="viewport">
+          <img src="knife_crop.jpg" alt="Kunai / throwing-knife part design in SolidWorks">
+        </div>
+        <div class="sheet-body">
+          <h3>Kunai Blade Design</h3>
+          <p>Part design combining a revolved ring handle with a lofted blade profile — practice in blending revolve, loft, and fillet features into one clean solid body.</p>
+          <div class="tags"><span class="tag">Revolve</span><span class="tag">Loft</span><span class="tag">Part Design</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="section" id="skills">
+    <div class="section-head reveal">
+      <span class="section-num">03</span>
+      <h2 class="section-title">Skills — Bill of Materials</h2>
+    </div>
+
+    <table class="bom reveal">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Skill</th>
+          <th class="col-hide">Description</th>
+          <th>Proficiency</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="item-no">01</td>
+          <td class="item-name">SolidWorks — Part &amp; Assembly</td>
+          <td class="col-hide">Parametric modeling, mates, motion studies</td>
+          <td><div class="meter" style="--fill:85%; --c: var(--c-cyan)"><span></span></div></td>
+        </tr>
+        <tr>
+          <td class="item-no">02</td>
+          <td class="item-name">Sheet Metal Design</td>
+          <td class="col-hide">Flat patterns, bends, formed features</td>
+          <td><div class="meter" style="--fill:70%; --c: var(--c-purple)"><span></span></div></td>
+        </tr>
+        <tr>
+          <td class="item-no">03</td>
+          <td class="item-name">Weldments</td>
+          <td class="col-hide">Structural frames, weld beads, cut lists</td>
+          <td><div class="meter" style="--fill:75%; --c: var(--c-yellow)"><span></span></div></td>
+        </tr>
+        <tr>
+          <td class="item-no">04</td>
+          <td class="item-name">Surfacing</td>
+          <td class="col-hide">Complex/organic geometry, ducting</td>
+          <td><div class="meter" style="--fill:60%; --c: var(--c-pink)"><span></span></div></td>
+        </tr>
+        <tr>
+          <td class="item-no">05</td>
+          <td class="item-name">FEA — Static Simulation</td>
+          <td class="col-hide">Stress, deflection, factor-of-safety checks</td>
+          <td><div class="meter" style="--fill:65%; --c: var(--c-orange)"><span></span></div></td>
+        </tr>
+        <tr>
+          <td class="item-no">06</td>
+          <td class="item-name">CFD — Flow Simulation</td>
+          <td class="col-hide">Airflow behaviour, duct efficiency</td>
+          <td><div class="meter" style="--fill:60%; --c: var(--c-green)"><span></span></div></td>
+        </tr>
+        <tr>
+          <td class="item-no">07</td>
+          <td class="item-name">Engineering Drawings</td>
+          <td class="col-hide">Dimensioning, views, basic GD&amp;T</td>
+          <td><div class="meter" style="--fill:65%; --c: var(--c-cyan)"><span></span></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section" id="contact">
+    <div class="contact-block corner-marks reveal">
+      <h2>Let's talk.</h2>
+      <p>Open to internships and entry-level design roles.</p>
+      <div class="contact-fields">
+        <div class="field"><b>EMAIL</b> — add yours here</div>
+        <div class="field"><b>LINKEDIN</b> — add yours here</div>
+        <div class="field"><b>PHONE</b> — optional</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>GHUFRAN AHMED &nbsp;·&nbsp; MECHANICAL DESIGN PORTFOLIO &nbsp;·&nbsp; REV. 02</footer>
+
+<script>
+  // duplicate ticker content for seamless loop
+  const track = document.getElementById('ticker-track');
+  track.innerHTML += track.innerHTML;
+
+  // cursor coordinate readout
+  const coord = document.getElementById('coord-readout');
+  if (window.matchMedia('(pointer: fine)').matches) {
+    document.addEventListener('mousemove', (e) => {
+      coord.style.left = e.clientX + 'px';
+      coord.style.top = e.clientY + 'px';
+      coord.style.opacity = '1';
+      coord.textContent = `X ${String(e.clientX).padStart(4,'0')} · Y ${String(e.clientY).padStart(4,'0')}`;
+    });
+    document.addEventListener('mouseleave', () => { coord.style.opacity = '0'; });
+  }
+
+  // scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  revealEls.forEach(el => io.observe(el));
+
+  // animate skill meters when visible
+  const meters = document.querySelectorAll('.meter');
+  const meterIO = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('filled');
+        meterIO.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.4 });
+  meters.forEach(el => meterIO.observe(el));
+
+  // subtle tilt on project cards
+  document.querySelectorAll('.sheet').forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const r = card.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      card.style.transform = `perspective(700px) rotateY(${x * 6}deg) rotateX(${-y * 6}deg) translateY(-3px)`;
+    });
+    card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+  });
+</script>
+
+</body>
+</html>
